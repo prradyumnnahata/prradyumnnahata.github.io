@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pradyumn nahata</title>
+<style>
+  :root {
+    --cream: #faf6ec;
+    --cream-dim: rgba(250, 246, 236, 0.66);
+    --gold: #e8c97a;
+    --font-display: 'Cormorant', 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'Cormorant', 'Cormorant Garamond', Georgia, serif;
+    --font-cloud: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    --shadow:
+      0 1px 2px rgba(10, 20, 40, 0.5),
+      0 2px 10px rgba(10, 20, 40, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background-image: url('sky.jpg');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #2a5f9e;
+    font-family: var(--font-body);
+    overflow: hidden;
+  }
+
+  /* the ONLY scrolling element on the page, and its box is physically
+     shorter than the screen: it stops 84px above the bottom edge, so that
+     strip is never part of its visible/clipped region at any scroll
+     position — not an overlay trick, an actual excluded zone */
+  .scroll-area {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(100vh - 84px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent 100%);
+  }
+
+  .page {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 64px 20px 40px;
+  }
+
+  .col {
+    width: 100%;
+    max-width: 540px;
+    flex: 1;
+  }
+
+  .name {
+    color: var(--cream);
+    font-size: 27px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin: 0 0 2px;
+    text-shadow: var(--shadow);
+  }
+
+  .tagline {
+    color: var(--cream-dim);
+    font-size: 18px;
+    font-weight: 600;
+    font-style: italic;
+    margin: 0 0 44px;
+    text-shadow: var(--shadow);
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .row {
+    display: flex;
+    gap: 18px;
+    padding: 7px 0;
+    cursor: pointer;
+    min-width: 0;
+    align-items: baseline;
+  }
+
+  .row .date {
+    color: var(--cream-dim);
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 16px;
+    font-weight: 600;
+    font-style: italic;
+    text-shadow: var(--shadow);
+  }
+
+  .row .title {
+    color: var(--cream);
+    min-width: 0;
+    font-size: 22px;
+    font-weight: 700;
+    text-shadow: var(--shadow);
+    border-bottom: 1px solid transparent;
+  }
+
+  .row:hover .title, .row:focus-visible .title {
+    color: var(--gold);
+    border-bottom: 1px solid var(--gold);
+    outline: none;
+  }
+
+  .empty-line {
+    color: var(--cream-dim);
+    padding: 7px 0;
+    font-size: 18px;
+    font-weight: 600;
+    font-style: italic;
+    text-shadow: var(--shadow);
+  }
+
+  /* reader */
+  .reader-screen { display: none; }
+  .reader-screen.active { display: block; }
+  .list-screen.hidden { display: none; }
+
+  .back-line {
+    color: var(--cream-dim);
+    cursor: pointer;
+    margin-bottom: 32px;
+    display: inline-block;
+    font-size: 17px;
+    font-weight: 600;
+    font-style: italic;
+    text-shadow: var(--shadow);
+  }
+  .back-line:hover { color: var(--gold); }
+  .back-line::before { content: '\2190 '; }
+
+  .essay-date {
+    color: var(--cream-dim);
+    font-size: 16px;
+    font-weight: 600;
+    font-style: italic;
+    margin: 0 0 8px;
+    text-shadow: var(--shadow);
+  }
+
+  .essay-title {
+    color: var(--cream);
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 28px;
+    text-shadow: var(--shadow);
+    text-wrap: balance;
+  }
+
+  .essay-image {
+    width: 100%;
+    margin: 0 0 28px;
+  }
+  .essay-image img {
+    width: 100%;
+    display: block;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+
+  .prose {
+    color: var(--cream);
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.7;
+    text-shadow: var(--shadow);
+  }
+  .prose p {
+    margin: 0 0 22px;
+  }
+  .prose p:last-child { margin-bottom: 0; }
+
+  ::selection {
+    background: var(--gold);
+    color: #1a2a3a;
+  }
+
+  /* bottom: the thin cloud margin, its own voice — docked to the viewport,
+     never scrolled through, with its own backdrop so it reads as a
+     permanent sealed strip rather than part of the page flow */
+  .cloudband {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 84px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgba(22, 34, 48, 0.16) 0%,
+      rgba(22, 34, 48, 0.08) 45%,
+      rgba(22, 34, 48, 0) 100%
+    );
+    z-index: 10;
+  }
+
+  .progress-track {
+    width: 100%;
+    max-width: 480px;
+    height: 2px;
+    background: rgba(18, 28, 42, 0.28);
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: rgba(18, 28, 42, 0.65);
+    transition: width 0.1s linear;
+  }
+
+  .aside {
+    max-width: 440px;
+    text-align: center;
+    color: rgba(20, 32, 46, 0.62);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35);
+    font-family: var(--font-cloud);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .aside.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aside { transition: none; }
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,600;0,700;1,600&family=IBM+Plex+Mono:wght@500&display=swap">
+</head>
+<body>
+
+<div class="scroll-area" id="scroll-area">
+  <div class="page">
+    <div class="col">
+
+      <div class="list-screen" id="list-screen">
+        <p class="name">pradyumn nahata</p>
+        <p class="tagline">essays</p>
+        <div class="list" id="list"></div>
+      </div>
+
+      <div class="reader-screen" id="reader-screen">
+        <span class="back-line" id="back">back</span>
+        <div id="essay-content"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="cloudband" id="cloudband">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <p class="aside" id="aside"></p>
+</div>
+
+<script>
+  let ESSAYS = [];
+
+  const ASIDES = [
+    "the clouds are not paid to be here",
+    "this bar fills whether or not you're paying attention",
+    "68% of readers made it this far. the rest went outside",
+    "a cloud has never once finished an essay either",
+    "this is not a metaphor, it's just sky",
+    "you could be looking at real clouds instead",
+    "no, scrolling faster does not count as reading"
+  ];
+
+  const scrollArea = document.getElementById('scroll-area');
+  const listScreen = document.getElementById('list-screen');
+  const readerScreen = document.getElementById('reader-screen');
+  const list = document.getElementById('list');
+  const essayContent = document.getElementById('essay-content');
+  const back = document.getElementById('back');
+  const progressFill = document.getElementById('progress-fill');
+  const asideEl = document.getElementById('aside');
+
+  let asideTimer = null;
+
+  function fmtDate(iso) {
+    try {
+      const d = new Date(iso + 'T00:00:00');
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) { return iso; }
+  }
+
+  function renderList() {
+    list.innerHTML = '';
+    const sorted = [...ESSAYS].sort((a, b) => b.date.localeCompare(a.date));
+
+    if (sorted.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-line';
+      empty.textContent = 'nothing yet';
+      list.appendChild(empty);
+      return;
+    }
+
+    sorted.forEach((essay) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.tabIndex = 0;
+      row.setAttribute('role', 'link');
+
+      const date = document.createElement('span');
+      date.className = 'date';
+      date.textContent = fmtDate(essay.date);
+
+      const title = document.createElement('span');
+      title.className = 'title';
+      title.textContent = essay.title;
+
+      row.appendChild(date);
+      row.appendChild(title);
+
+      row.addEventListener('click', () => openEssay(essay.slug));
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEssay(essay.slug); }
+      });
+
+      list.appendChild(row);
+    });
+  }
+
+  function renderProse(bodyText) {
+    return bodyText
+      .split(/\n\n+/)
+      .map((para) => '<p>' + para.replace(/\n/g, '<br>') + '</p>')
+      .join('');
+  }
+
+  function updateProgress() {
+    const scrollable = scrollArea.scrollHeight - scrollArea.clientHeight;
+    const pct = scrollable > 0 ? Math.min(100, Math.max(0, (scrollArea.scrollTop / scrollable) * 100)) : 0;
+    progressFill.style.width = pct + '%';
+  }
+
+  function showRandomAside() {
+    const text = ASIDES[Math.floor(Math.random() * ASIDES.length)];
+    asideEl.textContent = text;
+    asideEl.classList.add('visible');
+    setTimeout(() => {
+      asideEl.classList.remove('visible');
+    }, 4200);
+  }
+
+  function scheduleAsides() {
+    clearTimeout(asideTimer);
+    const tick = () => {
+      showRandomAside();
+      const delay = 9000 + Math.random() * 12000;
+      asideTimer = setTimeout(tick, delay);
+    };
+    asideTimer = setTimeout(tick, 4000 + Math.random() * 3000);
+  }
+
+  function stopAsides() {
+    clearTimeout(asideTimer);
+    asideEl.classList.remove('visible');
+  }
+
+  function openEssay(slug) {
+    const essay = ESSAYS.find((e) => e.slug === slug);
+    if (!essay) return;
+
+    essayContent.innerHTML = '';
+
+    const date = document.createElement('p');
+    date.className = 'essay-date';
+    date.textContent = fmtDate(essay.date);
+    essayContent.appendChild(date);
+
+    const title = document.createElement('p');
+    title.className = 'essay-title';
+    title.textContent = essay.title;
+    essayContent.appendChild(title);
+
+    if (essay.image) {
+      const imgWrap = document.createElement('div');
+      imgWrap.className = 'essay-image';
+      const img = document.createElement('img');
+      img.src = essay.image;
+      img.alt = '';
+      imgWrap.appendChild(img);
+      essayContent.appendChild(imgWrap);
+    }
+
+    const prose = document.createElement('div');
+    prose.className = 'prose';
+    prose.innerHTML = renderProse(essay.body);
+    essayContent.appendChild(prose);
+
+    listScreen.classList.add('hidden');
+    readerScreen.classList.add('active');
+    scrollArea.scrollTop = 0;
+    history.replaceState(null, '', '#' + slug);
+
+    updateProgress();
+    scheduleAsides();
+  }
+
+  function closeEssay() {
+    readerScreen.classList.remove('active');
+    listScreen.classList.remove('hidden');
+    scrollArea.scrollTop = 0;
+    history.replaceState(null, '', location.pathname);
+    stopAsides();
+    progressFill.style.width = '0%';
+  }
+
+  back.addEventListener('click', closeEssay);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && readerScreen.classList.contains('active')) closeEssay();
+  });
+
+  scrollArea.addEventListener('scroll', () => {
+    if (readerScreen.classList.contains('active')) updateProgress();
+  });
+
+  fetch('essays.json?v=' + Date.now())
+    .then((r) => r.json())
+    .then((data) => {
+      ESSAYS = data;
+      renderList();
+      const hash = location.hash.replace('#', '');
+      if (hash && ESSAYS.some((e) => e.slug === hash)) openEssay(hash);
+    })
+    .catch(() => {
+      list.innerHTML = '';
+      const err = document.createElement('p');
+      err.className = 'empty-line';
+      err.textContent = 'couldn\'t load essays.json';
+      list.appendChild(err);
+    });
+</script>
+</body>
+</html>
