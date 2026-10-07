@@ -38,13 +38,18 @@
   /* the ONLY scrolling element on the page, and its box is physically
      shorter than the screen: it stops 84px above the bottom edge, so that
      strip is never part of its visible/clipped region at any scroll
-     position — not an overlay trick, an actual excluded zone */
+     position — not an overlay trick, an actual excluded zone.
+     100vh is wrong on mobile (it's the viewport with browser chrome
+     HIDDEN, which overshoots the real visible area while chrome is
+     showing, letting content drift under the band) — 100dvh tracks the
+     actual visible viewport as chrome shows/hides. */
   .scroll-area {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     height: calc(100vh - 84px);
+    height: calc(100dvh - 84px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent 100%);
