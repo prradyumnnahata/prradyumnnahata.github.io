@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>edit — pradyumn nahata</title>
+<style>
+  :root {
+    --cream: #faf6ec;
+    --cream-dim: rgba(250, 246, 236, 0.66);
+    --gold: #e8c97a;
+    --ink: #1d2433;
+    --glass: rgba(20, 32, 56, 0.55);
+    --glass-strong: rgba(14, 22, 40, 0.72);
+    --line: rgba(250, 246, 236, 0.22);
+    --font-display: 'Cormorant', 'Cormorant Garamond', Georgia, serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    --shadow: 0 1px 2px rgba(10, 20, 40, 0.5), 0 2px 10px rgba(10, 20, 40, 0.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: #2a5f9e url('sky.jpg') center bottom / cover no-repeat fixed;
+    font-family: var(--font-display);
+    color: var(--cream);
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 18px 80px; }
+  h1 { font-size: 27px; margin: 0 0 4px; text-shadow: var(--shadow); }
+  .sub { color: var(--cream-dim); font-style: italic; font-size: 18px; margin: 0 0 28px; text-shadow: var(--shadow); }
+  .sub a { color: var(--gold); }
+  .panel {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  label { display: block; font-size: 15px; font-style: italic; color: var(--cream-dim); margin: 14px 0 6px; }
+  label:first-child { margin-top: 0; }
+  input, textarea, select {
+    width: 100%;
+    font: inherit;
+    font-size: 18px;
+    color: var(--cream);
+    background: var(--glass-strong);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  textarea { min-height: 55vh; line-height: 1.55; resize: vertical; }
+  .mono { font-family: var(--font-mono); font-size: 14px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row > * { flex: 1 1 160px; }
+  button {
+    font: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 9px 18px;
+    border: 1px solid var(--line);
+    background: var(--glass-strong);
+    color: var(--cream);
+    cursor: pointer;
+  }
+  button.primary { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+  button.danger.armed { background: #b3412f; border-color: #b3412f; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .status { min-height: 1.4em; margin-top: 12px; font-style: italic; color: var(--cream-dim); }
+  .status.err { color: #ffb4a6; }
+  .status.ok { color: var(--gold); }
+  .hint { font-size: 15px; color: var(--cream-dim); line-height: 1.45; }
+  .hint ol { padding-left: 20px; margin: 8px 0; }
+  .hint a { color: var(--gold); }
+  .hidden { display: none !important; }
+  .preview { font-size: 20px; line-height: 1.6; }
+  .preview h2 { font-size: 26px; margin: 0 0 14px; }
+  .preview p { margin: 0 0 1em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>edit</h1>
+  <p class="sub">only works with your GitHub key · <a href="./">back to the site</a></p>
+
+  <!-- key setup -->
+  <div id="keyPanel" class="panel hidden">
+    <label for="token">GitHub key (fine-grained personal access token)</label>
+    <input id="token" class="mono" type="password" autocomplete="off" placeholder="github_pat_…">
+    <div class="btns"><button class="primary" id="saveKey">unlock</button></div>
+    <div class="hint">
+      <ol>
+        <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token</a>.</li>
+        <li>Repository access: <b>Only select repositories</b> → <b>prradyumnnahata.github.io</b>.</li>
+        <li>Permissions → Repository → <b>Contents: Read and write</b>.</li>
+        <li>Generate, copy, paste above. It stays in this browser only and is never put on the site.</li>
+      </ol>
+    </div>
+    <div class="status" id="keyStatus"></div>
+  </div>
+
+  <!-- editor -->
+  <div id="editorPanel" class="hidden">
+    <div class="panel">
+      <div class="row">
+        <select id="picker" aria-label="choose essay"></select>
+        <button id="newBtn" style="flex:0 0 auto">+ new essay</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <label for="title">title</label>
+      <input id="title" type="text">
+      <div class="row">
+        <div>
+          <label for="date">date</label>
+          <input id="date" type="date">
+        </div>
+        <div>
+          <label for="slug">url name</label>
+          <input id="slug" class="mono" type="text" placeholder="lowercase-with-hyphens">
+        </div>
+      </div>
+      <label for="excerpt">excerpt (optional)</label>
+      <input id="excerpt" type="text">
+      <label for="body">essay — leave a blank line between paragraphs; a single line break stays a line break</label>
+      <textarea id="body" spellcheck="true"></textarea>
+      <div class="btns">
+        <button class="primary" id="saveBtn">save &amp; publish</button>
+        <button id="previewBtn">preview</button>
+        <button class="danger" id="deleteBtn">delete</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div id="previewPanel" class="panel preview hidden"></div>
+
+    <div class="btns"><button id="forgetKey">forget key on this device</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const OWNER = 'prradyumnnahata';
+  const REPO = 'prradyumnnahata.github.io';
+  const PATH = 'essays.json';
+  const BRANCH = 'main';
+  const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
+  const KEY_NAME = 'essay-editor-token';
+
+  const $ = (id) => document.getElementById(id);
+  let token = '';
+  let essays = [];
+  let sha = '';
+  let currentSlug = null; // slug of the essay being edited; null = new
+
+  // ---- storage (wrapped: storage can be unavailable) ----
+  const store = {
+    get() { try { return localStorage.getItem(KEY_NAME) || ''; } catch (e) { return ''; } },
+    set(v) { try { localStorage.setItem(KEY_NAME, v); } catch (e) {} },
+    clear() { try { localStorage.removeItem(KEY_NAME); } catch (e) {} },
+  };
+
+  // ---- utf-8 safe base64 ----
+  function b64ToText(b64) {
+    const bin = atob(b64.replace(/\s/g, ''));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+  function textToB64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(bin);
+  }
+
+  function setStatus(el, msg, kind) {
+    el.textContent = msg;
+    el.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  async function gh(method, body) {
+    const res = await fetch(method === 'GET' ? `${API}?ref=${BRANCH}&t=${Date.now()}` : API, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { detail = (await res.json()).message || ''; } catch (e) {}
+      const err = new Error(detail || res.statusText);
+      err.status = res.status;
+      throw err;
+    }
+    return res.json();
+  }
+
+  async function load() {
+    const data = await gh('GET');
+    sha = data.sha;
+    essays = JSON.parse(b64ToText(data.content));
+  }
+
+  function sorted() {
+    return [...essays].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  }
+
+  function fillPicker(selectSlug) {
+    const picker = $('picker');
+    picker.innerHTML = '';
+    sorted().forEach((e) => {
+      const o = document.createElement('option');
+      o.value = e.slug;
+      o.textContent = `${e.date} — ${e.title}`;
+      picker.appendChild(o);
+    });
+    if (selectSlug && essays.some((e) => e.slug === selectSlug)) picker.value = selectSlug;
+  }
+
+  function showEssay(slug) {
+    const e = essays.find((x) => x.slug === slug);
+    if (!e) return newEssay();
+    currentSlug = e.slug;
+    $('title').value = e.title || '';
+    $('date').value = e.date || '';
+    $('slug').value = e.slug || '';
+    $('excerpt').value = e.excerpt || '';
+    $('body').value = e.body || '';
+    $('deleteBtn').classList.remove('hidden');
+    disarmDelete();
+    refreshPreview();
+  }
+
+  function today() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  function newEssay() {
+    currentSlug = null;
+    $('picker').value = '';
+    $('title').value = '';
+    $('date').value = today();
+    $('slug').value = '';
+    $('excerpt').value = '';
+    $('body').value = '';
+    $('deleteBtn').classList.add('hidden');
+    setStatus($('status'), 'new essay — not saved yet');
+    refreshPreview();
+    $('title').focus();
+  }
+
+  function slugify(s) {
+    return s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  // same rendering rule as the site
+  function renderProse(text) {
+    return (text || '').trim().split(/\n\n+/)
+      .map((p) => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
+  }
+  function refreshPreview() {
+    const panel = $('previewPanel');
+    if (panel.classList.contains('hidden')) return;
+    const h = document.createElement('h2');
+    h.textContent = $('title').value || 'untitled';
+    panel.innerHTML = '';
+    panel.appendChild(h);
+    panel.insertAdjacentHTML('beforeend', renderProse($('body').value));
+  }
+
+  async function save() {
+    const status = $('status');
+    const entry = {
+      slug: $('slug').value.trim() || slugify($('title').value),
+      title: $('title').value.trim(),
+      date: $('date').value,
+      image: '',
+      excerpt: $('excerpt').value.trim(),
+      body: $('body').value.replace(/\r\n/g, '\n').trim(),
+    };
+    if (!entry.title) return setStatus(status, 'add a title first', 'err');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) return setStatus(status, 'pick a date', 'err');
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(entry.slug)) return setStatus(status, 'url name: lowercase letters, numbers and hyphens only', 'err');
+    if (!entry.body) return setStatus(status, 'the essay is empty', 'err');
+    const clash = essays.find((e) => e.slug === entry.slug && e.slug !== currentSlug);
+    if (clash) return setStatus(status, `another essay already uses the url name "${entry.slug}"`, 'err');
+
+    const existing = essays.find((e) => e.slug === currentSlug);
+    if (existing && existing.image) entry.image = existing.image;
+    const next = existing
+      ? essays.map((e) => (e.slug === currentSlug ? entry : e))
+      : [entry, ...essays];
+
+    $('saveBtn').disabled = true;
+    setStatus(status, 'publishing…');
+    try {
+      const res = await gh('PUT', {
+        message: `${existing ? 'Edit' : 'Add'} essay: ${entry.title}`,
+        content: textToB64(JSON.stringify(next, null, 2) + '\n'),
+        sha,
+        branch: BRANCH,
+      });
+      sha = res.content.sha;
+      essays = next;
+      currentSlug = entry.slug;
+      fillPicker(entry.slug);
+      $('slug').value = entry.slug;
+      $('deleteBtn').classList.remove('hidden');
+      setStatus(status, 'published — live on the site in about a minute', 'ok');
+    } catch (err) {
+      if (err.status === 409 || err.status === 422) {
+        setStatus(status, 'the file changed somewhere else — reloading; your text is still here, press save again', 'err');
+        try { await load(); fillPicker(currentSlug); } catch (e) {}
+      } else if (err.status === 401 || err.status === 403) {
+        setStatus(status, 'GitHub refused the key — check it has Contents: read and write on this repo', 'err');
+      } else {
+        setStatus(status, 'couldn’t publish: ' + err.message, 'err');
+      }
+    } finally {
+      $('saveBtn').disabled = false;
+    }
+  }
+
+  // two-tap delete, no browser dialogs
+  let deleteTimer = null;
+  function disarmDelete() {
+    clearTimeout(deleteTimer);
+    const b = $('deleteBtn');
+    b.classList.remove('armed');
+    b.textContent = 'delete';
+  }
+  async function del() {
+    const b = $('deleteBtn');
+    if (!b.classList.contains('armed')) {
+      b.classList.add('armed');
+      b.textContent = 'tap again to delete';
+      deleteTimer = setTimeout(disarmDelete, 4000);
+      return;
+    }
+    disarmDelete();
+    const target = essays.find((e) => e.slug === currentSlug);
+    if (!target) return;
+    const next = essays.filter((e) => e.slug !== currentSlug);
+    const status = $('status');
+    setStatus(status, 'deleting…');
+    try {
+      const res = await gh('PUT', {
+        message: `Delete essay: ${target.title}`,
+        content: textToB64(JSON.stringify(next, null, 2) + '\n'),
+        sha,
+        branch: BRANCH,
+      });
+      sha = res.content.sha;
+      essays = next;
+      fillPicker();
+      if (essays.length) showEssay(sorted()[0].slug); else newEssay();
+      setStatus(status, `deleted "${target.title}"`, 'ok');
+    } catch (err) {
+      setStatus(status, 'couldn’t delete: ' + err.message, 'err');
+    }
+  }
+
+  async function unlock(t) {
+    token = t;
+    const keyStatus = $('keyStatus');
+    setStatus(keyStatus, 'checking…');
+    try {
+      await load();
+      store.set(token);
+      $('keyPanel').classList.add('hidden');
+      $('editorPanel').classList.remove('hidden');
+      fillPicker();
+      if (essays.length) showEssay(sorted()[0].slug); else newEssay();
+    } catch (err) {
+      token = '';
+      $('keyPanel').classList.remove('hidden');
+      $('editorPanel').classList.add('hidden');
+      setStatus(keyStatus,
+        err.status === 401 || err.status === 403 || err.status === 404
+          ? 'that key doesn’t have access — check the repo and the Contents permission'
+          : 'couldn’t reach GitHub: ' + err.message, 'err');
+    }
+  }
+
+  // ---- wiring ----
+  $('saveKey').addEventListener('click', () => {
+    const t = $('token').value.trim();
+    if (t) unlock(t);
+  });
+  $('token').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('saveKey').click(); });
+  $('picker').addEventListener('change', (e) => { showEssay(e.target.value); setStatus($('status'), ''); });
+  $('newBtn').addEventListener('click', newEssay);
+  $('saveBtn').addEventListener('click', save);
+  $('deleteBtn').addEventListener('click', del);
+  $('previewBtn').addEventListener('click', () => {
+    const panel = $('previewPanel');
+    panel.classList.toggle('hidden');
+    $('previewBtn').textContent = panel.classList.contains('hidden') ? 'preview' : 'hide preview';
+    refreshPreview();
+  });
+  ['title', 'body'].forEach((id) => $(id).addEventListener('input', refreshPreview));
+  $('title').addEventListener('input', () => {
+    if (currentSlug === null) $('slug').value = slugify($('title').value);
+  });
+  $('forgetKey').addEventListener('click', () => {
+    store.clear();
+    token = '';
+    $('token').value = '';
+    $('editorPanel').classList.add('hidden');
+    $('keyPanel').classList.remove('hidden');
+    setStatus($('keyStatus'), 'key removed from this device');
+  });
+
+  const saved = store.get();
+  if (saved) unlock(saved); else $('keyPanel').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>

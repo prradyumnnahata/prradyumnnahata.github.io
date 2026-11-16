@@ -2,6 +2,15 @@
 
 Live at: https://prradyumnnahata.github.io
 
+## Editing from the browser (phone-friendly)
+
+Go to https://prradyumnnahata.github.io/edit.html — it isn't linked from the
+site. The first time, paste a GitHub fine-grained personal access token that has
+access to only this repository with **Contents: Read and write** (the page links
+to where you make one). The token is kept in that browser only, never in the
+repo, so the page is useless to anyone else. Pick an essay or tap "+ new essay",
+write with a blank line between paragraphs, and press "save & publish".
+
 ## Adding a new essay
 
 Open `essays.json` (click it on GitHub, then the pencil/edit icon) and add a new
